@@ -12,8 +12,8 @@ def Page():
     name_values, set_name_values = solara.use_state([])
     # name_values=solara.use_reactive([])
     print('name_values2:',name_values)
-    selected_name, set_selected_name = solara.use_state('')
-    # selected_name=solara.use_reactive('')
+    # selected_name, set_selected_name = solara.use_state('')
+    selected_name=solara.use_reactive('')
     def filter_surname_prefix():
         print('t_prefix: ', t_prefix.value)
         if not t_prefix.value:
@@ -55,7 +55,7 @@ def Page():
 
 
     def update_name():
-        idx=name_values.index(selected_name)
+        idx=name_values.index(selected_name.value)
         new_name = t_surname.value + ','+ t_name.value
         name_values[idx] = new_name
         # set_t_name('')
@@ -63,9 +63,9 @@ def Page():
         t_surname.value=''
 
     def delete_name():
-        name_values.remove(selected_name)
-        set_selected_name('')
-        # selected_name=''
+        name_values.remove(selected_name.value)
+        # set_selected_name('')
+        selected_name.value=''
         # set_t_name('')
         t_name.value = ''
         t_surname.value=''
@@ -78,7 +78,7 @@ def Page():
             with solara.Card():
                 solara.InputText(label='Filter prefix', value=t_prefix,
                                  continuous_update=True)
-                solara.Select(label='List of names', value=selected_name, values=filtered_name_values, on_value=set_selected_name)
+                solara.Select(label='List of names', value=selected_name, values=filtered_name_values)
                 solara.Button(label='Create', on_click=create_name)
                 solara.Button(label='Update', on_click=update_name)
                 solara.Button(label='Delete', on_click=delete_name)
