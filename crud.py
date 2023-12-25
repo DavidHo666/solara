@@ -4,7 +4,7 @@ import solara
 def Page():
     t_prefix, set_t_prefix = solara.use_state('')
     # t_prefix=solara.use_reactive('')
-    print('t_prefix',t_prefix)
+    # print('t_prefix',t_prefix)
     t_name, set_t_name = solara.use_state('')
     # t_name=solara.use_reactive('')
     t_surname, set_t_surname = solara.use_state('')
@@ -43,6 +43,7 @@ def Page():
         # name_values.append(new_name)
         set_name_values(name_values+[new_name])
         print("name_values1: ", name_values)
+        print('filtered_name_values1', filtered_name_values)
 
         set_t_name('')
         set_t_surname('')
