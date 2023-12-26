@@ -33,4 +33,4 @@ def Page():
     result: solara.Result[bool]=solara.use_thread(timer_work, dependencies=[duration.value])
 
 
-    timer_component(elapsed_time,duration, on_duration_change, on_reset)
+    timer_component(elapsed_time,duration)
