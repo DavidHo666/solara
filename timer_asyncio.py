@@ -4,15 +4,14 @@ import solara
 elapsed_time=solara.reactive(0)
 duration=solara.reactive(60)
 @solara.component
-def timer_component(elapsed_time,duration, duration_callback, reset_callback):
+def timer_component(elapsed_time, duration, duration_change_callback, reset_callback):
     progress_value = (elapsed_time.value / duration.value) * 100 if duration.value > 0 else 0
     with solara.Card():
         solara.ProgressLinear(value=progress_value,
-                              style={'color': 'blue',
-                                     'background-color': 'white'})
+                              style={'color': 'blue', 'background-color': 'white'})
         solara.Markdown(f'{elapsed_time}s')
         solara.SliderInt(label='Duration', value=duration, min=0, max=100,
-                         on_value=lambda x: duration_callback(x))
+                         on_value=lambda x: duration_change_callback(x))
         solara.Button(label='Reset', on_click= reset_callback)
 
 @solara.component
