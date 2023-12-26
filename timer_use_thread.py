@@ -5,7 +5,7 @@ import time
 elapsed_time=solara.reactive(0)
 duration=solara.reactive(60)
 @solara.component
-def timer_component(elapsed_time, duration, duration_change_callback, reset_callback):
+def timer_component(elapsed_time, duration):
     progress_value = (elapsed_time.value / duration.value) * 100 if duration.value > 0 else 0
     with solara.Card():
         solara.ProgressLinear(value=progress_value,
