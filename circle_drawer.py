@@ -3,7 +3,8 @@ from math import sqrt
 import asyncio
 
 circles = solara.reactive([])  # type: ignore
-history = solara.reactive([])  # type: ignore
+undo_history = solara.reactive([]) # type: ignore
+redo_history = solara.reactive([]) # type: ignore
 selected_circle = solara.reactive({})  # type: ignore
 popup_menu_visible = solara.reactive(False)
 adjust_diameter_visible = solara.reactive(False)
@@ -12,27 +13,29 @@ canCreateCircle = solara.reactive(True)
 @solara.component
 def Page():
     FIXED_DIAMETER = 50
-    def undo():
-        pass
-    def redo():
-        pass
     def handle_click(*args):
         if canCreateCircle.value:
+            event = args[2]
+            x, y = event['x'], event['y']
+            # print('x:', x, 'y:', y)
+            new_circle = {
+                "x": x,
+                "y": y,
+                "diameter": FIXED_DIAMETER,
+                "selected": False
+            }
+            new_state = circles.value + [new_circle]
+            undo_history.value.append(new_state) # dangerous
+            print('undo_history: ', undo_history.value)
+            circles.set(new_state)
+            redo_history.value.clear()
+        else:
             if popup_menu_visible.value:
                 popup_menu_visible.set(False)
+                selected_circle.set({})
+                canCreateCircle.set(True)
             elif adjust_diameter_visible.value:
                 pass
-            else:
-                event = args[2]
-                x, y = event['x'], event['y']
-                # print('x:', x, 'y:', y)
-                new_circle = {
-                    "x": x,
-                    "y": y,
-                    "diameter": FIXED_DIAMETER,
-                    "selected": False
-                }
-                circles.set(circles.value+[new_circle])
 
     def handle_mouse_move(*args):
         event = args[2]
@@ -54,6 +57,7 @@ def Page():
         if selected:
             selected_circle.set(selected[0])
             popup_menu_visible.set(True)
+            canCreateCircle.set(False)
 
 
     def open_adjust_diameter_frame():
@@ -66,24 +70,42 @@ def Page():
             updated_circles = []
             for circle in circles.value:
                 if circle['x'] == selected_circle.value['x'] and circle['y'] == selected_circle.value['y']:
-                    print('updating diameter')
+                    # print('updating diameter')
                     updated_circle = {**circle,
                                       "diameter": new_diameter}
                 else:
                     updated_circle = circle
                 updated_circles.append(updated_circle)
 
+
             circles.set(updated_circles)
-            selected_circle.value["diameter"] = new_diameter  # Update selected_circle's diameter
+
 
     def close_adjust_diameter_frame():
+        undo_history.value.append(circles.value)
+        print('undo_history: ', undo_history.value)
+        redo_history.value.clear()
         adjust_diameter_visible.set(False)
-
         async def enable_circle_creation():
-            await asyncio.sleep(0.1)  # Short delay
+            await asyncio.sleep(0.1)
             canCreateCircle.set(True)
 
         asyncio.create_task(enable_circle_creation())
+
+    def undo():
+        print('undoing')
+        if undo_history.value:
+            last_state = undo_history.value.pop()
+            print('last_state: ',last_state)
+            redo_history.value.append(circles.value)
+            print('redo_history: ',redo_history.value)
+        circles.set(undo_history.value[-1] if undo_history else [])
+
+    def redo():
+        if redo_history.value:
+            last_redo_state = redo_history.value.pop()
+            undo_history.value.append(circles.value)
+            circles.set(last_redo_state)
 
     with solara.VBox() as main:
         with solara.Columns([1,1]):
@@ -110,7 +132,8 @@ def Page():
                         "position": "absolute",
                         "left": str(selected_circle.value["x"]) + "px",
                         "top": str(selected_circle.value["y"]) + "px"}) as popup_menu:
-                        solara.Button("Adjust diameter..", on_click=open_adjust_diameter_frame)
+                        solara.Button("Adjust diameter..",
+                                      on_click=open_adjust_diameter_frame)
 
                 if adjust_diameter_visible.value:
                     with solara.Div(style={
