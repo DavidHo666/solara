@@ -1,5 +1,6 @@
 import asyncio
 import solara
+from typing import cast, Union
 
 elapsed_time=solara.reactive(0)
 duration=solara.reactive(60)
@@ -15,22 +16,23 @@ def timer_component(elapsed_time, duration, duration_change_callback, reset_call
         solara.Button(label='Reset', on_click= reset_callback)
 
 @solara.component
-def Page():
-    timer_task=None
+def Page() -> None:
+    # timer_task=None
+    timer_task=solara.use_ref(cast(Union[asyncio.Task, None], None))
+    # print("running page", duration.value)
     async def timer_tick():
         while elapsed_time.value < duration.value:
             await asyncio.sleep(1)
             new_val=elapsed_time.value+1
             elapsed_time.set(new_val)
 
-    def start_timer():
-        nonlocal timer_task
-        if timer_task:
-            timer_task.cancel()
-        timer_task = asyncio.create_task(timer_tick())
+    def start_timer() -> None:
+        if timer_task.current:
+            timer_task.current.cancel()
+        timer_task.current = asyncio.create_task(timer_tick())
 
     def on_duration_change(new_duration):
-        duration.set(new_duration)
+        # duration.set(new_duration)
         start_timer()
 
     def on_reset():
